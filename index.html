@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Age Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: auto;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input, select, button {
+            margin: 5px 0;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .lang-buttons {
+            margin-bottom: 20px;
+        }
+        button.lang {
+            width: 80px;
+        }
+        .result-container, .current-date-container, .weeks-days-container, .days-container {
+            margin-top: 20px;
+        }
+        .result-container p, .current-date-container p, .weeks-days-container p, .days-container p {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+    <link rel="manifest" href="manifest.json">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then((registration) => {
+                console.log('Service Worker registered with scope:', registration.scope);
+            }).catch((error) => {
+                console.log('Service Worker registration failed:', error);
+            });
+        }
+
+        const translations = {
+            en: {
+                title: 'Age Calculator',
+                day: 'Day',
+                month: 'Month',
+                year: 'Year',
+                calculate: 'Calculate Age',
+                months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+                alert: 'Please fill all fields',
+                monthsPlural: 'Age in months',
+                age: 'Age: ',
+                weeksDays: 'Age in weeks: ',
+                weeks: 'week',
+                days: 'Age in days: ',
+                currentDate: 'Current Date: '
+            },
+            ar: {
+                title: 'حاسبة العمر',
+                day: 'يوم',
+                month: 'شهر',
+                year: 'سنة',
+                calculate: 'احسب العمر',
+                months: ["يناير", "فبراير", "مارس", "إبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"],
+                alert: 'يرجى ملء جميع الحقول',
+                monthsPlural: 'العمر بالشهور',
+                age: 'العمر: ',
+                weeksDays: 'العمر بالأسابيع: ',
+                weeks: 'أسبوع',
+                days: 'العمر بالأيام: ',
+                currentDate: 'التاريخ الحالي: '
+            }
+        };
+        function setLanguage(lang) {
+            const trans = translations[lang];
+            document.getElementById('title').textContent = trans.title;
+            document.getElementById('day').placeholder = trans.day;
+            document.getElementById('month').options[0].textContent = trans.month;
+            document.getElementById('year').placeholder = trans.year;
+            document.querySelector('button[onclick="calculateAge()"]').textContent = trans.calculate;
+            const monthSelect = document.getElementById('month');
+            for (let i = 1; i < monthSelect.options.length; i++) {
+                monthSelect.options[i].textContent = trans.months[i - 1];
+            }
+            displayCurrentDate(lang);
+        }
+        function detectLanguage() {
+            const userLang = navigator.language || navigator.userLanguage;
+            const lang = userLang.includes('ar') ? 'ar' : 'en';
+            setLanguage(lang);
+        }
+        function displayCurrentDate(lang) {
+            const today = new Date();
+            const currentDate = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+            document.getElementById('current-date').textContent = `${translations[lang].currentDate} ${currentDate}`;
+        }
+        function calculateAge() {
+            const day = document.getElementById('day').value;
+            const month = document.getElementById('month').value;
+            const year = document.getElementById('year').value;
+            const lang = document.getElementById('title').textContent === 'حاسبة العمر' ? 'ar' : 'en';
+            if (!day || !month || !year) {
+                alert(translations[lang].alert);
+                return;
+            }
+            const birthDate = new Date(year, month, day);
+            const today = new Date();
+            let ageInYears = today.getFullYear() - birthDate.getFullYear();
+            let ageInMonths = today.getMonth() - birthDate.getMonth();
+            let ageInDays = today.getDate() - birthDate.getDate();
+            if (ageInDays < 0) {
+                ageInMonths--;
+                ageInDays += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+            }
+            if (ageInMonths < 0) {
+                ageInYears--;
+                ageInMonths += 12;
+            }
+            const totalMonths = ageInYears * 12 + ageInMonths;
+            const totalDays = Math.floor((today - birthDate) / (1000 * 60 * 60 * 24));
+            const totalWeeks = Math.floor(totalDays / 7);
+            const remainingDays = totalDays % 7;
+            document.getElementById('result-years-months-days').textContent = `${translations[lang].age} ${ageInYears} ${translations[lang].year}, ${ageInMonths} ${translations[lang].month}, ${ageInDays} ${translations[lang].day}`;
+            document.getElementById('result-months').textContent = `${translations[lang].monthsPlural}: ${totalMonths} ${translations[lang].month}, ${ageInDays} ${translations[lang].day}`;
+            document.getElementById('result-weeks-days').textContent = `${translations[lang].weeksDays} ${totalWeeks} ${translations[lang].weeks}, ${remainingDays} ${translations[lang].day}`;
+            document.getElementById('result-days').textContent = `${translations[lang].days} ${totalDays} ${translations[lang].day}`;
+        }
+        document.addEventListener('DOMContentLoaded', detectLanguage);
+    </script>
+</head>
+<body>
+    <div class="lang-buttons">
+        <button class="lang" onclick="setLanguage('en')">English</button>
+        <button class="lang" onclick="setLanguage('ar')">العربية</button>
+    </div>
+    <div class="container">
+        <h1 id="title">Age Calculator</h1>
+        <input type="number" id="day" placeholder="Day" min="1" max="31" required>
+        <select id="month" required>
+            <option value="" disabled selected>Month</option>
+            <option value="0">January</option>
+            <option value="1">February</option>
+            <option value="2">March</option>
+            <option value="3">April</option>
+            <option value="4">May</option>
+            <option value="5">June</option>
+            <option value="6">July</option>
+            <option value="7">August</option>
+            <option value="8">September</option>
+            <option value="9">October</option>
+            <option value="10">November</option>
+            <option value="11">December</option>
+        </select>
+        <input type="number" id="year" placeholder="Year" required>
+        <button onclick="calculateAge()">Calculate Age</button>
+        <div class="current-date-container">
+            <p id="current-date"></p>
+        </div>
+        <div class="result-container">
+            <p id="result-years-months-days"></p>
+            <p id="result-months"></p>
+        </div>
+        <div class="weeks-days-container">
+            <p id="result-weeks-days"></p>
+        </div>
+        <div class="days-container">
+            <p id="result-days"></p>
+        </div>
+    </div>
+</body>
+</html>
