@@ -222,6 +222,32 @@
     }
 </script>
 
+<button id="install-button" style="display: none;">Install App</button>
+
+<script>
+    let deferredPrompt;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault(); // Prevent the mini-info bar from appearing
+        deferredPrompt = e; // Stash the event so it can be triggered later
+        document.getElementById('install-button').style.display = 'block'; // Show the install button
+    });
+
+    document.getElementById('install-button').addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt(); // Show the install prompt
+            const { outcome } = await deferredPrompt.userChoice; // Wait for the user to respond to the prompt
+            if (outcome === 'accepted') {
+                console.log('User accepted the A2HS prompt');
+            } else {
+                console.log('User dismissed the A2HS prompt');
+            }
+            deferredPrompt = null; // Clear the deferred prompt
+            document.getElementById('install-button').style.display = 'none'; // Hide the install button
+        }
+    });
+</script>
+
 
 </body>
 </html>
