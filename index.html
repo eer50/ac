@@ -44,41 +44,48 @@
             border-radius: 5px;
         }
     </style>
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+    <div class="lang-buttons">
+        <button class="lang" onclick="setLanguage('en')">English</button>
+        <button class="lang" onclick="setLanguage('ar')">العربية</button>
+    </div>
+    <div class="container">
+        <h1 id="title">Age Calculator</h1>
+        <input type="number" id="day" placeholder="Day" min="1" max="31" required>
+        <select id="month" required>
+            <option value="" disabled selected>Month</option>
+            <option value="0">January</option>
+            <option value="1">February</option>
+            <option value="2">March</option>
+            <option value="3">April</option>
+            <option value="4">May</option>
+            <option value="5">June</option>
+            <option value="6">July</option>
+            <option value="7">August</option>
+            <option value="8">September</option>
+            <option value="9">October</option>
+            <option value="10">November</option>
+            <option value="11">December</option>
+        </select>
+        <input type="number" id="year" placeholder="Year" required>
+        <button onclick="calculateAge()">Calculate Age</button>
+        <div class="current-date-container">
+            <p id="current-date"></p>
+        </div>
+        <div class="result-container">
+            <p id="result-years-months-days"></p>
+            <p id="result-months"></p>
+        </div>
+        <div class="weeks-days-container">
+            <p id="result-weeks-days"></p>
+        </div>
+        <div class="days-container">
+            <p id="result-days"></p>
+        </div>
+    </div>
     <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/ac/sw.js').then((registration) => {
-                console.log('Service Worker registered with scope:', registration.scope);
-            }).catch((error) => {
-                console.log('Service Worker registration failed:', error);
-            });
-        }
-
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            showInstallPromotion(); // Show your install button here
-        });
-
-        const installButton = document.getElementById('installButton'); // Ensure you have an install button in your HTML
-        installButton.addEventListener('click', (e) => {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('User accepted the install prompt');
-                } else {
-                    console.log('User dismissed the install prompt');
-                }
-                deferredPrompt = null;
-            });
-        });
-
-        function showInstallPromotion() {
-            const installButton = document.getElementById('installButton');
-            installButton.style.display = 'block';
-        }
-
         const translations = {
             en: {
                 title: 'Age Calculator',
@@ -147,12 +154,12 @@
                 alert(translations[lang].alert);
                 return;
             }
-
             const birthDate = new Date(year, month, day);
             const today = new Date();
             let ageInYears = today.getFullYear() - birthDate.getFullYear();
             let ageInMonths = today.getMonth() - birthDate.getMonth();
             let ageInDays = today.getDate() - birthDate.getDate();
+
             if (ageInDays < 0) {
                 ageInMonths--;
                 ageInDays += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
@@ -175,47 +182,46 @@
 
         document.addEventListener('DOMContentLoaded', detectLanguage);
     </script>
-</head>
-<body>
-    <div class="lang-buttons">
-        <button class="lang" onclick="setLanguage('en')">English</button>
-        <button class="lang" onclick="setLanguage('ar')">العربية</button>
-    </div>
-    <div class="container">
-        <h1 id="title">Age Calculator</h1>
-        <input type="number" id="day" placeholder="Day" min="1" max="31" required>
-        <select id="month" required>
-            <option value="" disabled selected>Month</option>
-            <option value="0">January</option>
-            <option value="1">February</option>
-            <option value="2">March</option>
-            <option value="3">April</option>
-            <option value="4">May</option>
-            <option value="5">June</option>
-            <option value="6">July</option>
-            <option value="7">August</option>
-            <option value="8">September</option>
-            <option value="9">October</option>
-            <option value="10">November</option>
-            <option value="11">December</option>
-        </select>
-        <input type="number" id="year" placeholder="Year" required>
-        <button onclick="calculateAge()">Calculate Age</button>
-        <div class="current-date-container">
-            <p id="current-date"></p>
-        </div>
-                   <div class="result-container">
-               <p id="result-years-months-days"></p>
-               <p id="result-months"></p>
-           </div>
-           <div class="weeks-days-container">
-               <p id="result-weeks-days"></p>
-           </div>
-           <div class="days-container">
-               <p id="result-days"></p>
-           </div>
-       </div>
 
-       <button id="installButton" style="display: none;">Install</button>
-   </body>
+
+<!-- Add install button to HTML -->
+<button id="installButton" style="display: none;">Install</button>
+
+<script>
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then((registration) => {
+            console.log('Service Worker registered with scope:', registration.scope);
+        }).catch((error) => {
+            console.log('Service Worker registration failed:', error);
+        });
+    }
+
+    // Handle install prompt
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        showInstallPromotion(); // Show the install button here
+    });
+
+    const installButton = document.getElementById('installButton');
+    installButton.addEventListener('click', (e) => {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('User accepted the install prompt');
+            } else {
+                console.log('User dismissed the install prompt');
+            }
+            deferredPrompt = null;
+        });
+    });
+
+    function showInstallPromotion() {
+        const installButton = document.getElementById('installButton');
+        installButton.style.display = 'block';
+    }
+</script>
+</body>
 </html>
