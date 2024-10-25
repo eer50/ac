@@ -3,8 +3,14 @@ self.addEventListener('install', (event) => {
         caches.open('age-calculator-cache').then((cache) => {
             return cache.addAll([
                 '/',
-                '/ac/index.html', // Your main HTML file
-                // Add any other assets if needed
+                '/ac/index.html',
+                '/ac/manifest.json',
+                // Include CSS, JS, and any other assets
+                // For example:
+                // '/ac/style.css',
+                // '/ac/script.js',
+                // '/ac/icon.png',
+                // '/ac/icon-512.png',
             ]);
         })
     );
