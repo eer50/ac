@@ -3,9 +3,9 @@ self.addEventListener('install', (event) => {
         caches.open('age-calculator-cache').then((cache) => {
             return cache.addAll([
                 '/',
-                '/index.html',
-                '/manifest.json'
-                // Add additional files if necessary
+                '/ac/index.html',
+                '/ac/manifest.json'
+                // Include any other essential files
             ]);
         })
     );
