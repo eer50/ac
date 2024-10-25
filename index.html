@@ -46,7 +46,43 @@
     </style>
     <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#000000">
+<!-- Service Worker Registration -->
+    <script>
+        // Register the service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('data:application/javascript;base64,' + btoa(`
+                    self.addEventListener('install', (event) => {
+                        event.waitUntil(
+                            caches.open('age-calculator-cache').then((cache) => {
+                                return cache.addAll([
+                                    '/',
+                                    '/index.html',
+                                    '/style.css',
+                                    '/script.js',
+                                    '/manifest.json',
+                                    'icon-192x192.png',
+                                    'icon-512x512.png'
+                                ]);
+                            })
+                        );
+                    });
 
+                    self.addEventListener('fetch', (event) => {
+                        event.respondWith(
+                            caches.match(event.request).then((response) => {
+                                return response || fetch(event.request);
+                            })
+                        );
+                    });
+                `)).then((registration) => {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                }).catch((error) => {
+                    console.log('Service Worker registration failed:', error);
+                });
+            });
+        }
+    </script>
 </head>
 <body>
     <div class="lang-buttons">
@@ -185,68 +221,34 @@
         document.addEventListener('DOMContentLoaded', detectLanguage);
     </script>
 
-<script>
-    // Register the service worker
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('data:application/javascript;base64,' + btoa(`
-                self.addEventListener('install', (event) => {
-                    event.waitUntil(
-                        caches.open('age-calculator-cache').then((cache) => {
-                            return cache.addAll([
-                                '/',
-                                '/index.html',
-                                '/style.css',
-                                '/script.js',
-                                '/manifest.json',
-                                'icon-192x192.png',
-                                'icon-512x512.png'
-                            ]);
-                        })
-                    );
-                });
 
-                self.addEventListener('fetch', (event) => {
-                    event.respondWith(
-                        caches.match(event.request).then((response) => {
-                            return response || fetch(event.request);
-                        })
-                    );
-                });
-            `)).then((registration) => {
-                console.log('Service Worker registered with scope:', registration.scope);
-            }).catch((error) => {
-                console.log('Service Worker registration failed:', error);
-            });
+
+    <button id="install-button" style="display: none;">Install App</button>
+
+    <!-- Button Script -->
+    <script>
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); // Prevent the mini-info bar from appearing
+            deferredPrompt = e; // Stash the event for later use
+            document.getElementById('install-button').style.display = 'block'; // Show the install button
         });
-    }
-</script>
 
-<button id="install-button" style="display: none;">Install App</button>
-
-<script>
-    let deferredPrompt;
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault(); // Prevent the mini-info bar from appearing
-        deferredPrompt = e; // Stash the event so it can be triggered later
-        document.getElementById('install-button').style.display = 'block'; // Show the install button
-    });
-
-    document.getElementById('install-button').addEventListener('click', async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt(); // Show the install prompt
-            const { outcome } = await deferredPrompt.userChoice; // Wait for the user to respond to the prompt
-            if (outcome === 'accepted') {
-                console.log('User accepted the A2HS prompt');
-            } else {
-                console.log('User dismissed the A2HS prompt');
+        document.getElementById('install-button').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt(); // Show the install prompt
+                const { outcome } = await deferredPrompt.userChoice; // Wait for the user to respond
+                if (outcome === 'accepted') {
+                    console.log('User accepted the A2HS prompt');
+                } else {
+                    console.log('User dismissed the A2HS prompt');
+                }
+                deferredPrompt = null; // Clear the deferred prompt
+                document.getElementById('install-button').style.display = 'none'; // Hide the install button
             }
-            deferredPrompt = null; // Clear the deferred prompt
-            document.getElementById('install-button').style.display = 'none'; // Hide the install button
-        }
-    });
-</script>
-
+        });
+    </script>
 </body>
 </html>
+
